@@ -15,6 +15,7 @@ use App\Models\VicidialUserGroup;
 use App\Models\vicidial_campaign;
 use App\Http\Requests\StoreDatas;
 use App\Helpers\globalData;
+use Illuminate\Support\Facades\Log;
 
 
 class LoginController extends Controller
@@ -93,14 +94,17 @@ class LoginController extends Controller
                 //insert data in agent_logs_table
                 $vicidial_agent_log = 'vicidial_agent_log';
                 $request_array=array('user'=>$user,'campaign_id'=>$campaign_id,'server_ip'=>$helper->server_ip,'event_time'=>$helper->NOW_TIME,'user_group'=>$user_group,'pause_epoch'=>$helper->StarTtimE,'pause_sec'=>'0','wait_epoch'=>$helper->StarTtimE,'pause_type'=>'AGENT','sub_status'=>'LOGIN');
+               Log::channel('agent_log_table')->info('Agent Logs: ' . json_encode($request_array));
                 $this->InsertService->insertData($vicidial_agent_log,$request_array);
-
+                
                 //insert Data in vicidial_live_agents table ***
                 $vicidial_live_agents = 'vicidial_live_agents';
                 $checkuser = 'user';
                 $loginPhoneData = $this->DeleteService->deleteData($vicidial_live_agents,$checkuser,$user);//delete live agent table if user in db...
-                $requestData = array('user'=>$user,'extension'=>$extension,'server_ip'=>$helper->server_ip,'conf_exten'=>$get_conf_exten->conf_exten,'status'=>'PAUSED','lead_id'=>'0','campaign_id'=>$campaign_id,'random_id'=>$helper->random,'user_level'=>$user_level,'last_call_time'=>$helper->NOW_TIME,'last_update_time'=>$helper->tsNOW_TIME,'last_call_finish'=>$helper->NOW_TIME,'last_state_change'=>$helper->NOW_TIME,'outbound_autodial'=>'Y','manager_ingroup_set'=>'N','last_inbound_call_time'=>$helper->NOW_TIME,'last_inbound_call_finish'=>$helper->NOW_TIME,'pause_code'=>'LOGIN');
+                $requestData = array('user'=>$user,'extension'=>$extension,'server_ip'=>$helper->server_ip,'conf_exten'=>$get_conf_exten->conf_exten,'status'=>'PAUSED','lead_id'=>'0','campaign_id'=>$campaign_id,'random_id'=>$helper->random,'user_level'=>$user_level,'last_call_time'=>$helper->NOW_TIME,'last_update_time'=>$helper->tsNOW_TIME,'last_call_finish'=>$helper->NOW_TIME,'last_state_change'=>$helper->NOW_TIME,'outbound_autodial'=>'Y','manager_ingroup_set'=>'N','last_inbound_call_time'=>$helper->NOW_TIME,'last_inbound_call_finish'=>$helper->NOW_TIME,'pause_code'=>'');
                 $this->InsertService->insertData($vicidial_live_agents,$requestData);
+                Log::channel('agent_live_agent')->info('Agent Live Logs: ' . json_encode($requestData));
+                
                 //insert data in vicidial_session_data table ***************
                 $this->SessionData($user,$campaign_id,$extension,$get_conf_exten->conf_exten);
 
@@ -113,6 +117,7 @@ class LoginController extends Controller
                     'status' => 'success',
                     'token' => $token,
                     'user' => $loginUserData,
+                    'phonData'=>$phoneData,
                 ];
            //}
         //  catch (\Exception $e) {
@@ -165,7 +170,7 @@ class LoginController extends Controller
         $vicidial_session_data = 'vicidial_session_data';
         $checkuser = 'user';
        $this->DeleteService->deleteData($vicidial_session_data,$checkuser,$user);//delete sesssion
-        $sessionData = array('session_name'=>'','user'=>$user,'campaign_id'=>$campaign_id,'server_ip'=>$helper->server_ip,'extension'=>$extension,'login_time'=>$helper->NOW_TIME,'webphone_url'=>'','agent_login_call'=>'','conf_exten'=>$get_conf_exten);
+        $sessionData = array('session_name'=>null,'user'=>$user,'campaign_id'=>$campaign_id,'server_ip'=>$helper->server_ip,'extension'=>$extension,'login_time'=>$helper->NOW_TIME,'webphone_url'=>'','agent_login_call'=>'','conf_exten'=>$get_conf_exten);
         return $this->InsertService->insertData($vicidial_session_data,$sessionData);
     }
 
@@ -205,7 +210,6 @@ class LoginController extends Controller
         $this->DeleteService->deleteData($vicidial_session_data,$checkuser,$auth);
         $vicidial_conferences = 'vicidial_conferences';//update extension
         $requestData = array('extension'=>null);
-
         $this->UpdateService->updateData($vicidial_conferences,'extension',$extension,$requestData);
 
         $vicidial_agent_logs = 'vicidial_agent_log'; //get data
@@ -214,7 +218,7 @@ class LoginController extends Controller
         $requestData = array('pause_sec'=>$pause_epoch);
          $this->UpdateService->updateLastData($vicidial_agent_logs,'user',$auth,$requestData);//update data
 
-         $request_array= array('user'=>$auth,'campaign_id'=>$campaign_id,'server_ip'=>$helper->server_ip,'event_time'=>$helper->NOW_TIME,'pause_type'=>'AGENT');
+         $request_array= array('user'=>$auth,'campaign_id'=>$campaign_id,'server_ip'=>$helper->server_ip,'event_time'=>$helper->NOW_TIME,'pause_type'=>'AGENT','pause_epoch'=>$helper->StarTtimE);
          $this->InsertService->insertData($vicidial_agent_logs,$request_array);
 
           auth()->user()->tokens()->delete();

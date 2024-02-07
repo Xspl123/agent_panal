@@ -59,6 +59,17 @@ return [
             'path' => storage_path('logs/laravel.log'),
             'level' => env('LOG_LEVEL', 'debug'),
         ],
+        
+        'agent_log_table' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/agent_log_table.log'),
+            'level' => 'info',
+        ],
+        'agent_live_agent' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/agent_live_agent.log'),
+            'level' => 'info',
+        ],
 
         'daily' => [
             'driver' => 'daily',

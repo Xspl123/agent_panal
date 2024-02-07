@@ -38,6 +38,11 @@ class SelectService
         return DB::table($tablename)->select($column)->get();
     }
 
+    public function getWhereData($tablename,$column,$scloumn,$dcloumn)
+    {
+        return  DB::table($tablename)->select($column)->where($scloumn,$dcloumn)->get();
+    }
+
     // public function singledata($table,$column,$scloumn,$dcloumn)
     // {
     //     $leads = DB::table($table)->select($column)->where($scloumn,$dcloumn)->latest()->get();

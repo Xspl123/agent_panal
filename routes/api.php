@@ -23,6 +23,10 @@ Route::middleware(['auth:sanctum'])->group(function(){
      Route::post('/pauseStart', [SingleController::class, 'pauseStart']);
      Route::post('/pauseStop', [SingleController::class, 'pauseStop']);
 
+     Route::post('/activeAgent', [SingleController::class, 'activeAgent']);
+     Route::post('/pauseAgent', [SingleController::class, 'pauseAgent']);
+
+
     Route::post('/logout', [LoginController::class, 'logout']);
     
 
